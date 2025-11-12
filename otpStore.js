@@ -199,7 +199,10 @@ if (typeof require !== 'undefined' && require.main === module) {
   console.log('   ✅ One-time use enforcement');
 }
 
-// Export for use in other modules
+// Export for use in other modules (Node.js) or make available globally (browser)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { createOtpStore };
+} else if (typeof window !== 'undefined') {
+  // Make available globally for browser use
+  window.createOtpStore = createOtpStore;
 }

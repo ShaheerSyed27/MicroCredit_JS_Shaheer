@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiwi Sports Apparel - OTP Security System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Kiwi Sports Apparel</span>
+                </div>
+                <div class="header-subtitle">
+                    One-Time Passcode Security System
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-content">
+                    <h1>Secure Multi-Factor Authentication</h1>
+                    <p>Enhanced login security through time-limited one-time passcodes. Experience enterprise-grade protection for your Kiwi Sports Apparel account.</p>
+                </div>
+                <div class="security-features">
+                    <div class="feature">
+                        <i class="fas fa-clock"></i>
+                        <span>5-minute expiry</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-lock"></i>
+                        <span>Single-use only</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Auto cleanup</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OTP Management Panel -->
+            <section class="otp-panel">
+                <div class="panel-grid">
+                    <!-- Issue OTP Section -->
+                    <div class="card issue-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-plus-circle"></i> Issue New OTP</h2>
+                            <p>Generate a secure one-time passcode</p>
+                        </div>
+                        <div class="card-body">
+                            <form id="issueForm">
+                                <div class="input-group">
+                                    <label for="passcode">Passcode (6-8 digits)</label>
+                                    <input type="number" id="passcode" placeholder="123456" min="100000" max="99999999" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="duration">Duration</label>
+                                    <select id="duration">
+                                        <option value="30000">30 seconds</option>
+                                        <option value="60000" selected>1 minute</option>
+                                        <option value="120000">2 minutes</option>
+                                        <option value="300000">5 minutes (max)</option>
+                                        <option value="custom">Custom duration</option>
+                                    </select>
+                                </div>
+                                <div class="input-group custom-duration" id="customDurationGroup" style="display: none;">
+                                    <label for="customDuration">Custom Duration (ms)</label>
+                                    <input type="number" id="customDuration" placeholder="60000" min="1000" max="300000">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-key"></i> Issue OTP
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Authenticate Section -->
+                    <div class="card auth-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-sign-in-alt"></i> Authenticate</h2>
+                            <p>Verify your one-time passcode</p>
+                        </div>
+                        <div class="card-body">
+                            <form id="authForm">
+                                <div class="input-group">
+                                    <label for="authPasscode">Enter OTP</label>
+                                    <input type="number" id="authPasscode" placeholder="123456" min="100000" max="99999999" required>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check-circle"></i> Verify OTP
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Status Display -->
+            <section class="status-section">
+                <div class="status-card">
+                    <div class="status-header">
+                        <h3><i class="fas fa-info-circle"></i> System Status</h3>
+                    </div>
+                    <div class="status-content" id="statusContent">
+                        <div class="status-item">
+                            <i class="fas fa-circle text-success"></i>
+                            <span>OTP System Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active OTPs Display -->
+            <section class="active-otps">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-list"></i> Active OTPs</h3>
+                        <p>Currently issued one-time passcodes</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="otp-list" id="otpList">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No active OTPs</p>
+                                <small>Issue a new OTP to get started</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Demo Section -->
+            <section class="demo-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-play-circle"></i> Quick Demo</h3>
+                        <p>See the OTP system in action</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="demo-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Issue OTP</h4>
+                                    <p>Create a new passcode with custom duration</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Verify OTP</h4>
+                                    <p>Use the passcode for authentication</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Single Use</h4>
+                                    <p>OTP becomes invalid after first use</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="runDemo" class="btn btn-outline">
+                            <i class="fas fa-rocket"></i> Run Automated Demo
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; 2024 Kiwi Sports Apparel. Secure authentication system.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Documentation</a>
+                    <a href="#" class="footer-link">Security</a>
+                    <a href="#" class="footer-link">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <div class="toast-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="toast-message">
+                <div class="toast-title">Success</div>
+                <div class="toast-text">Operation completed successfully</div>
+            </div>
+        </div>
+        <button class="toast-close" onclick="hideToast()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script src="otpStore.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
