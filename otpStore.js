@@ -21,6 +21,10 @@
  */
 function createOtpStore() {
   const MAX_MS = 5 * 60 * 1000; // 5 minutes maximum duration
+
+  // Map<passcode, { expiresAt: number, used: boolean }>
+  // We intentionally keep the value payload small so garbage collection can
+  // quickly reclaim entries once they expire.
   const store = new Map(); // Internal storage for passcode entries
 
   /**
@@ -29,6 +33,9 @@ function createOtpStore() {
    * 
    * @private
    */
+  // Lightweight garbage collector that runs before every mutation/read. It
+  // guarantees that consumers always interact with a clean store without
+  // leaking expired secrets in memory.
   const purgeExpired = () => {
     const now = Date.now();
     for (const [key, value] of store) {
@@ -54,19 +61,20 @@ function createOtpStore() {
     purgeExpired();
     
     // Validate and cap duration to maximum allowed
+    // Defensive coding: coerce to number and clamp to five-minute SLA.
     const cappedDuration = Math.min(Number(durationMs) || 0, MAX_MS);
     const now = Date.now();
-    
+
     // Check if unexpired passcode already exists BEFORE setting new value
     const existingEntry = store.get(passcode);
     const existedAndUnexpired = existingEntry && existingEntry.expiresAt > now && !existingEntry.used;
-    
+
     // Set/overwrite passcode with new duration
-    store.set(passcode, { 
-      expiresAt: now + cappedDuration, 
-      used: false 
+    store.set(passcode, {
+      expiresAt: now + cappedDuration,
+      used: false
     });
-    
+
     return Boolean(existedAndUnexpired);
   };
 
@@ -83,9 +91,9 @@ function createOtpStore() {
    */
   const useOnce = (passcode) => {
     purgeExpired();
-    
+
     const entry = store.get(passcode);
-    
+
     // Reject if passcode doesn't exist
     if (!entry) return false;
     
@@ -100,6 +108,8 @@ function createOtpStore() {
     // Mark as used and accept login
     entry.used = true;
     store.set(passcode, entry);
+
+    // Immediately purge so follow-up reads reflect the consumed state.
     purgeExpired();
     
     return true;
@@ -117,7 +127,9 @@ if (typeof require !== 'undefined' && require.main === module) {
   console.log('🔐 Kiwi Sports Apparel OTP Store Test\n');
   console.log('═'.repeat(60));
   
+  // Instantiate a fresh store so tests run in isolation.
   const otp = createOtpStore();
+  // Collect pass/fail results so we can present a clear summary for auditors.
   let testResults = [];
 
   // Test 1: Issue new OTP
