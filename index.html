@@ -11,7 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
+    <!-- ================================================================== -->
+    <!-- Header: Persistent branding and context for the OTP control center -->
+    <!-- ================================================================== -->
     <header class="header">
         <div class="container">
             <div class="header-content">
@@ -26,7 +28,11 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- ================================================================ -->
+    <!-- Main Application Shell                                           -->
+    <!-- Houses all operator tools for issuing and validating one-time    -->
+    <!-- passcodes. Each section below mirrors a critical user journey.   -->
+    <!-- ================================================================ -->
     <main class="main">
         <div class="container">
             <!-- Hero Section -->
@@ -36,6 +42,7 @@
                     <p>Enhanced login security through time-limited one-time passcodes. Experience enterprise-grade protection for your Kiwi Sports Apparel account.</p>
                 </div>
                 <div class="security-features">
+                    <!-- Quick bullet points reassure stakeholders of core controls -->
                     <div class="feature">
                         <i class="fas fa-clock"></i>
                         <span>5-minute expiry</span>
@@ -51,7 +58,9 @@
                 </div>
             </section>
 
-            <!-- OTP Management Panel -->
+            <!-- ======================================================== -->
+            <!-- OTP Management Panel: issue + authenticate tools         -->
+            <!-- ======================================================== -->
             <section class="otp-panel">
                 <div class="panel-grid">
                     <!-- Issue OTP Section -->
@@ -61,6 +70,7 @@
                             <p>Generate a secure one-time passcode</p>
                         </div>
                         <div class="card-body">
+                            <!-- Issuance form mirrors the customer support workflow -->
                             <form id="issueForm">
                                 <div class="input-group">
                                     <label for="passcode">Passcode (6-8 digits)</label>
@@ -108,13 +118,16 @@
                 </div>
             </section>
 
-            <!-- Status Display -->
+            <!-- =============================================== -->
+            <!-- Status Feed: rolling log for recent operations -->
+            <!-- =============================================== -->
             <section class="status-section">
                 <div class="status-card">
                     <div class="status-header">
                         <h3><i class="fas fa-info-circle"></i> System Status</h3>
                     </div>
                     <div class="status-content" id="statusContent">
+                        <!-- Seed entry is immediately replaced as soon as JS boots -->
                         <div class="status-item">
                             <i class="fas fa-circle text-success"></i>
                             <span>OTP System Ready</span>
@@ -123,7 +136,9 @@
                 </div>
             </section>
 
-            <!-- Active OTPs Display -->
+            <!-- ================================================== -->
+            <!-- Active OTPs Display: live dashboard of issued keys -->
+            <!-- ================================================== -->
             <section class="active-otps">
                 <div class="card">
                     <div class="card-header">
@@ -132,6 +147,7 @@
                     </div>
                     <div class="card-body">
                         <div class="otp-list" id="otpList">
+                            <!-- Placeholder view swapped out once an OTP is issued -->
                             <div class="empty-state">
                                 <i class="fas fa-inbox"></i>
                                 <p>No active OTPs</p>
@@ -142,20 +158,23 @@
                 </div>
             </section>
 
-            <!-- Demo Section -->
+            <!-- ================================================== -->
+            <!-- Demo Section: guided story for stakeholder reviews -->
+            <!-- ================================================== -->
             <section class="demo-section">
                 <div class="card">
                     <div class="card-header">
                         <h3><i class="fas fa-play-circle"></i> Quick Demo</h3>
                         <p>See the OTP system in action</p>
                     </div>
-                    <div class="card-body">
-                        <div class="demo-steps">
-                            <div class="step">
-                                <div class="step-number">1</div>
-                                <div class="step-content">
-                                    <h4>Issue OTP</h4>
-                                    <p>Create a new passcode with custom duration</p>
+                        <div class="card-body">
+                            <div class="demo-steps">
+                                <!-- Each step mirrors the scripted automation in app.js -->
+                                <div class="step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h4>Issue OTP</h4>
+                                        <p>Create a new passcode with custom duration</p>
                                 </div>
                             </div>
                             <div class="step">
@@ -182,7 +201,9 @@
         </div>
     </main>
 
-    <!-- Footer -->
+    <!-- =============================================================== -->
+    <!-- Footer: lightweight navigation + compliance friendly statement  -->
+    <!-- =============================================================== -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -190,6 +211,7 @@
                     <p>&copy; 2024 Kiwi Sports Apparel. Secure authentication system.</p>
                 </div>
                 <div class="footer-links">
+                    <!-- Links kept intentionally generic for coursework scope -->
                     <a href="#" class="footer-link">Documentation</a>
                     <a href="#" class="footer-link">Security</a>
                     <a href="#" class="footer-link">Support</a>

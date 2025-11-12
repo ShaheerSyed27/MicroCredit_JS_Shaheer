@@ -1,14 +1,25 @@
 /**
  * Frontend Application for Kiwi Sports Apparel OTP System
- * Handles user interactions, form submissions, and real-time updates
+ * ---------------------------------------------------------------------------
+ * This file acts as the presentation layer that wires the browser UI to the
+ * shared OTP store (see otpStore.js). Everything in here is focused on the
+ * "experience": collecting form inputs, triggering business logic, and keeping
+ * the interface stateful and reactive for support staff.
  */
 
-// Global OTP store instance
+// Global OTP store instance - populated once the shared module is loaded.
 let otpStore;
+
+// Map<passcode, OTPMeta> - mirrors the backend store so the UI can render
+// additional metadata (e.g., countdown timers, reused status, etc.).
 let activeOTPs = new Map();
+
+// Map<passcode, IntervalId> - dedicated timers per OTP so we can cleanly cancel
+// interval updates when an OTP expires or is consumed.
 let timers = new Map();
 
-// DOM elements
+// DOM lookups for high-traffic UI elements. Keeping them as globals prevents
+// repeated querySelector calls on every render cycle.
 const issueForm = document.getElementById('issueForm');
 const authForm = document.getElementById('authForm');
 const durationSelect = document.getElementById('duration');
@@ -17,7 +28,8 @@ const statusContent = document.getElementById('statusContent');
 const otpList = document.getElementById('otpList');
 const runDemoBtn = document.getElementById('runDemo');
 
-// Initialize the application
+// Bootstrapping entry-point. Once the DOM is parsed we can safely access form
+// fields and mount all event listeners in one place.
 document.addEventListener('DOMContentLoaded', function() {
     initializeOTPStore();
     setupEventListeners();
@@ -46,25 +58,28 @@ function initializeOTPStore() {
  * Setup all event listeners for the application
  */
 function setupEventListeners() {
-    // Duration select change handler
+    // Duration select change handler - toggles the custom duration field when
+    // the "custom" option is chosen so we do not overwhelm users with extra
+    // inputs until necessary.
     durationSelect.addEventListener('change', function() {
         const isCustom = this.value === 'custom';
         customDurationGroup.style.display = isCustom ? 'block' : 'none';
     });
 
-    // Issue OTP form submission
+    // Issue OTP form submission - orchestrates validation and store updates.
     issueForm.addEventListener('submit', function(e) {
         e.preventDefault();
         handleIssueOTP();
     });
 
-    // Authentication form submission
+    // Authentication form submission - mirrors the real login flow where an
+    // end user presents their one-time code.
     authForm.addEventListener('submit', function(e) {
         e.preventDefault();
         handleAuthentication();
     });
 
-    // Demo button
+    // Demo button - provides a guided walk-through for stakeholders.
     runDemoBtn.addEventListener('click', handleDemo);
 }
 
@@ -95,25 +110,27 @@ function handleIssueOTP() {
 
     try {
         // Issue OTP
+        // Core business call: delegate to the shared store to persist the OTP.
         const wasExisting = otpStore.issue(passcode, duration);
-        
+
         // Update active OTPs tracking
         addToActiveOTPs(passcode, duration, wasExisting);
-        
-        // Show feedback
-        const message = wasExisting ? 
+
+        // Show feedback - highlight whether we extended an existing key or
+        // created a new one so analysts understand the state change.
+        const message = wasExisting ?
             `OTP ${passcode} duration updated to ${formatDuration(duration)}` :
             `New OTP ${passcode} issued for ${formatDuration(duration)}`;
-        
+
         showToast(message, 'OTP Issued', 'success');
         updateStatus(`${wasExisting ? 'Updated' : 'Issued'} OTP: ${passcode}`, 'success');
         
-        // Clear form
+        // Clear form so operators can rapidly issue multiple keys
         document.getElementById('passcode').value = '';
-        
+
         // Update display
         updateOTPList();
-        
+
     } catch (error) {
         console.error('Error issuing OTP:', error);
         showToast('Failed to issue OTP', 'Error', 'error');
@@ -126,12 +143,15 @@ function handleIssueOTP() {
 function handleAuthentication() {
     const passcode = parseInt(document.getElementById('authPasscode').value);
     
+    // Basic guard to avoid unnecessary round-trips to the OTP store.
     if (!passcode) {
         showToast('Please enter a passcode', 'Invalid Input', 'error');
         return;
     }
 
     try {
+        // Attempt to redeem the passcode. The OTP store encapsulates expiry and
+        // single-use concerns so the UI simply reacts to the boolean result.
         const isValid = otpStore.useOnce(passcode);
         
         if (isValid) {
@@ -151,10 +171,10 @@ function handleAuthentication() {
         
         // Clear form
         document.getElementById('authPasscode').value = '';
-        
+
         // Update display
         updateOTPList();
-        
+
     } catch (error) {
         console.error('Error during authentication:', error);
         showToast('Authentication error occurred', 'Error', 'error');
@@ -167,12 +187,12 @@ function handleAuthentication() {
 function addToActiveOTPs(passcode, duration, wasExisting) {
     const now = Date.now();
     const expiresAt = now + duration;
-    
+
     // Clear existing timer if any
     if (timers.has(passcode)) {
         clearInterval(timers.get(passcode));
     }
-    
+
     // Add to active OTPs
     activeOTPs.set(passcode, {
         passcode: passcode,
@@ -182,15 +202,16 @@ function addToActiveOTPs(passcode, duration, wasExisting) {
         used: false,
         wasExisting: wasExisting
     });
-    
+
     // Setup timer for updates
     const timer = setInterval(() => {
         updateOTPTimer(passcode);
     }, 1000);
-    
+
     timers.set(passcode, timer);
-    
-    // Setup expiration cleanup
+
+    // Setup expiration cleanup - ensures the UI stays in sync even if the user
+    // never visits the authenticate tab again.
     setTimeout(() => {
         if (activeOTPs.has(passcode)) {
             activeOTPs.delete(passcode);
@@ -209,10 +230,10 @@ function addToActiveOTPs(passcode, duration, wasExisting) {
 function updateOTPTimer(passcode) {
     const otpData = activeOTPs.get(passcode);
     if (!otpData) return;
-    
+
     const now = Date.now();
     const remaining = Math.max(0, otpData.expiresAt - now);
-    
+
     if (remaining === 0 || otpData.used) {
         // Expired or used
         activeOTPs.delete(passcode);
@@ -224,12 +245,12 @@ function updateOTPTimer(passcode) {
         return;
     }
     
-    // Update progress bar
+    // Update progress bar - visual countdown of remaining validity.
     const element = document.querySelector(`[data-passcode="${passcode}"] .timer-progress`);
     if (element) {
         const progress = (remaining / otpData.duration) * 100;
         element.style.width = `${progress}%`;
-        
+
         // Update color based on remaining time
         element.className = 'timer-progress';
         if (progress < 25) {
@@ -238,7 +259,7 @@ function updateOTPTimer(passcode) {
             element.classList.add('warning');
         }
     }
-    
+
     // Update time text
     const timeElement = document.querySelector(`[data-passcode="${passcode}"] .time-remaining`);
     if (timeElement) {
@@ -269,6 +290,8 @@ function updateOTPList() {
         let statusClass = '';
         let statusText = '';
         
+        // Derive contextual status messaging for the card so operators get an
+        // immediate visual cue about what happened to the OTP (consumed vs expired).
         if (otp.used) {
             statusClass = 'text-danger';
             statusText = '🔒 Used';
@@ -279,7 +302,8 @@ function updateOTPList() {
             statusClass = 'text-success';
             statusText = '✅ Active';
         }
-        
+
+        // Adjust progress bar color as the OTP nears expiration.
         let progressClass = 'timer-progress';
         if (progress < 25) progressClass += ' danger';
         else if (progress < 50) progressClass += ' warning';
@@ -309,8 +333,9 @@ function updateOTPList() {
 async function handleDemo() {
     const btn = runDemoBtn;
     const originalText = btn.innerHTML;
-    
+
     try {
+        // Lock the button so the scenario cannot be triggered multiple times.
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner spinner"></i> Running Demo...';
         
@@ -332,6 +357,7 @@ async function handleDemo() {
         showToast('Demo Step 2: Authenticating with OTP', 'Demo', 'success');
         await delay(1000);
         
+        // Use the shared logic to simulate the real authentication flow.
         const authResult = otpStore.useOnce(demoPasscode);
         if (authResult) {
             if (activeOTPs.has(demoPasscode)) {
@@ -373,7 +399,7 @@ async function handleDemo() {
 function updateStatus(message, type = 'info') {
     const statusItem = document.createElement('div');
     statusItem.className = 'status-item';
-    
+
     let icon, textClass;
     switch (type) {
         case 'success':
@@ -483,7 +509,8 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Auto-refresh OTP list every second
+// Auto-refresh OTP list every second - keeps card timers accurate even when
+// nothing else triggers a re-render.
 setInterval(() => {
     if (activeOTPs.size > 0) {
         updateOTPList();
